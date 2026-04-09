@@ -60,7 +60,7 @@ on GitHub; in other viewers you may see the source only.
 
 ### Mind map (package scope)
 
-``` mermaid
+```mermaid
 mindmap
   root((rtForecastEval))
     Paper
@@ -82,7 +82,7 @@ mindmap
 
 ### Analysis workflow
 
-``` mermaid
+```mermaid
 flowchart TD
   subgraph src["Data sources"]
     A["df_gen()<br>(simulation)"]
@@ -144,9 +144,10 @@ repo; only R is supported for now.
 After installing the package (and **sde** for `df_gen()`), load
 **dplyr**, **tidyr**, **ggplot2**, and **rtForecastEval**. The chunks
 below **execute** when you render `README.qmd`
-(e.g. `quarto render README.qmd` or `Rscript .R`) with the package
-available — for example `devtools::load_all()` from a local clone or
-`library(rtForecastEval)` after `pak::pak("chikuang/rtForecastEval")`.
+(e.g. `quarto render README.qmd` or `Rscript tools/render-readme.R`)
+with the package available — for example `devtools::load_all()` from a
+local clone or `library(rtForecastEval)` after
+`pak::pak("chikuang/rtForecastEval")`.
 
 ``` r
 library(dplyr)
@@ -168,7 +169,7 @@ library(tidyr)
 library(ggplot2)
 library(rtForecastEval)
 
-set.seed(777)
+set.seed(1)
 nsamp <- 40   # interior steps; df_gen() uses a grid of nsamp + 1 points on [0, 1]
 ngame <- 50   # independent replicates (“games”)
 D <- 8        # leading eigenvalues for the chi-square approximation
@@ -198,7 +199,7 @@ c(Z = ZZ, p_value = out$p_val, out$quantile)
 ```
 
             Z   p_value       90%       95%       99% 
-    0.1130837 0.4505000 0.4096234 0.5834393 1.0786941 
+    0.1765053 0.3500000 0.4172967 0.5875828 1.0606344 
 
 ### Pointwise skill plot and a simple calibration (reliability) view
 

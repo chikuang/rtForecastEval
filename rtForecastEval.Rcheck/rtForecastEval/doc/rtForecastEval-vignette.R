@@ -1,36 +1,11 @@
----
-title: "rtForecastEval guide"
-subtitle: "EVALuating Real-Time Probabilistic Forecast"
-author: |
-  | Chi-Kuang Yeh (Georgia State University); Gregory Rice, Joel A. Dubin (University of Waterloo)
-date: "`r Sys.Date()`"
-output:
-  rmarkdown::html_document:
-    toc: yes
-    toc_float: true
-    theme: readable
-    highlight: tango
-  rmarkdown::html_vignette:
-    toc: yes
-vignette: >
-  %\VignetteIndexEntry{rtForecastEval guide}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r setup, include = FALSE}
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 options(digits = 3)
-```
 
-## Mind map and workflow
-
-**rtForecastEval** compares two real-time forecasters on a common time grid. The schematic below matches the analysis order in this vignette: prepare a long tibble, run the **global delta test** (`calc_Z` → `calc_eig` → `calc_pval`), and optionally summarize **pointwise** loss with `calc_L_s2` and `plot_pcb`.
-
-```{r workflow-schematic, echo=FALSE, fig.width=8, fig.height=4, fig.cap="Typical workflow: global test (top) and pointwise loss plot (bottom). Arrows are logical dependencies, not strict call order."}
+## ----workflow-schematic, echo=FALSE, fig.width=8, fig.height=4, fig.cap="Typical workflow: global test (top) and pointwise loss plot (bottom). Arrows are logical dependencies, not strict call order."----
 library(ggplot2)
 
 box <- function(x, y, w, h, label) {
@@ -80,50 +55,18 @@ ggplot() +
   coord_cartesian(xlim = c(0.3, 7.5), ylim = c(1.5, 6.2), clip = "off") +
   theme_void() +
   theme(plot.margin = grid::unit(c(12, 8, 8, 8), "pt"))
-```
 
-The [package README](https://github.com/chikuang/rtForecastEval#mind-map-and-workflow) on GitHub also includes [Mermaid](https://mermaid.js.org/) mind map and flowchart diagrams (same ideas as the figure above).
-
-## Figures in the paper and where they are produced
-
-The [paper](https://doi.org/10.1080/00031305.2021.1967781) (preprint [arXiv:2010.00781](https://arxiv.org/abs/2010.00781)) has two kinds of graphics:
-
-### 1. Simulation and global test (this vignette + **rtForecastEval**)
-
-This vignette reproduces the **workflow** used in the simulation blocks of the paper: generate two competing real-time forecasts with [`df_gen()`], build `diff_non_cent` / `diff_cent`, compute the **delta test** statistic, eigenvalues, and Monte Carlo *p*-values with [`calc_Z()`], [`calc_eig()`], and [`calc_pval()`], and plot the **pointwise** mean loss difference with a naive band using [`calc_L_s2()`] and [`plot_pcb()`]. That corresponds to methodology for **skill** (relative performance) over game time in a controlled simulation.
-
-The first code chunk below spells out the linear algebra explicitly; the second chunk shows the same steps through the package wrappers.
-
-### 2. NBA application: calibration surfaces, reliability diagrams, and model comparisons
-
-Those figures are **not** self-contained in **rtForecastEval** because they require the scraped NBA play-by-play inputs, the `load_nba_data()` / `pre_process()` pipeline, and several bespoke plotting scripts.
-
-Reproduce them from the separate replication repository (**RTPForNBA**; historically bundled with the paper’s supplementary code), not from this package alone:
-
-| Idea in the paper | Typical script (replication repo) | Depends on |
-|-------------------|-----------------------------------|------------|
-| Calibration **surface** (3D: time × forecast × centered residual) | `plotting/surfacePlot.R` | `nba_FD.R` (fits logit, builds `my_df`), **plot3D**, **akima**, **lattice**, binned CIs |
-| Reliability-style **plot** at one time (e.g. mid-game) | `plotting/calibrationPlot.R` (see also end of `surfacePlot.R`) | Same prepared `df_try` object |
-| Skill curves / \(\hat\Delta_n(t)\) for ESPN vs models (PgRS, LTW, etc.) | `plotting/1_PgRS.R`, `2_LTW.R`, `3_CF.R`, … | `utility.R` (`calc_L_s2`, `L_smoothing`), `nba_FD.R` |
-| **Simulation** figures (oracle, score difference, etc.) | `simulation/PF-sim/plot_sim_*.R` | `simulation/PF-sim/simulator.R` and generated outputs |
-
-**Suggested order in the replication repo:** prepare data under `data/`, run `nba_FD.R` (or the season scripts it sources), then `source()` the relevant file under `plotting/` with working directory set to that project root.
-
-The rest of this vignette focuses on (1).
-
-```{r load, message = FALSE, include = FALSE}
+## ----load, message = FALSE, include = FALSE-----------------------------------
 require(dplyr)
 require(tidyr)
 require(gridExtra)
 require(RSpectra)
 require(rlist)
-```
 
-```{r, include = FALSE}
+## ----include = FALSE----------------------------------------------------------
 library(rtForecastEval)
-```
 
-```{r}
+## -----------------------------------------------------------------------------
 library(ggplot2)
 library(tibble)
 library(MASS)
@@ -214,11 +157,8 @@ tibble(
   "95%" = c(q_95_hat, q_95_til),
   "99%" = c(q_99_hat, q_99_til)
 )
-```
 
-### Same analysis using package functions
-
-```{r function wrappers, fig.width = 7, fig.height = 4.2, fig.cap = "Pointwise mean loss difference (A vs B) with naive normal band — simulation setting. This is a skill curve, not a calibration diagram."}
+## ----function wrappers, fig.width = 7, fig.height = 4.2, fig.cap = "Pointwise mean loss difference (A vs B) with naive normal band — simulation setting. This is a skill curve, not a calibration diagram."----
 to_center <- FALSE
 
 ZZ <- calc_Z(df = df_equ, pA = "phat_A", pB = "phat_B", Y = "Y", nsamp = nsamp, ngame = ngame)
@@ -240,13 +180,8 @@ tibble(
   "95%" = oh$quantile[2],
   "99%" = oh$quantile[3]
 )
-```
 
-### A simple calibration (reliability) view at one time
-
-The previous figure tracks **skill** (which forecaster loses less Brier loss over time). A complementary check is **marginal calibration**: within a narrow time slice, do predicted probabilities match observed event frequencies? The paper’s NBA figures use richer calibration **surfaces** (time × forecast × residual); here we only **bin** forecasts at a single grid point (closest to mid-game, \(t \approx 0.5\)) and plot mean outcome vs mean forecast — a standard reliability diagram.
-
-```{r calibration-reliability, fig.width = 7.5, fig.height = 4, fig.cap = "Binned reliability diagram at a fixed grid (closest to 0.5): mean outcome vs mean forecast for A and B. Points near the diagonal indicate better marginal calibration at that time."}
+## ----calibration-reliability, fig.width = 7.5, fig.height = 4, fig.cap = "Binned reliability diagram at a fixed grid (closest to 0.5): mean outcome vs mean forecast for A and B. Points near the diagonal indicate better marginal calibration at that time."----
 g_mid <- df_equ %>%
   distinct(grid) %>%
   slice_min(order_by = abs(grid - 0.5), n = 1) %>%
@@ -293,4 +228,4 @@ ggplot(rel_binned, aes(mean_forecast, mean_outcome)) +
     panel.grid.minor = ggplot2::element_blank(),
     plot.title = ggplot2::element_text(face = "bold")
   )
-```
+

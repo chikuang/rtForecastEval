@@ -1,0 +1,16 @@
+calc_L_s2               Pointwise mean loss difference and variance
+calc_Z                  Delta test statistic for comparing two
+                        forecasting methods
+calc_eig                Leading eigenvalues for the delta test
+                        covariance
+calc_pval               Monte Carlo p-value and quantiles for the delta
+                        test
+df_gen                  Simulate real-time probabilistic forecasts
+                        (paper designs)
+lin_interp              Linear interpolation of a forecast trajectory
+                        onto a grid
+plot_pcb                Naive pointwise confidence band for mean loss
+                        difference
+rtForecastEval-package
+                        rtForecastEval: Compare real-time probabilistic
+                        forecasts
