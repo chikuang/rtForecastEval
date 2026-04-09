@@ -2,26 +2,40 @@
 % Please edit documentation in R/calc_eig.R
 \name{calc_eig}
 \alias{calc_eig}
-\title{Calculator for eigenvalues}
+\title{Leading eigenvalues for the delta test covariance}
 \usage{
 calc_eig(df, n_eig = 10, ngame, nsamp, grid = "grid", cent = FALSE)
 }
 \arguments{
-\item{df}{A data frame that contains at least two columns, difference and the grid.}
+\item{df}{Data frame containing \code{grid} and a column \code{diff_cent} or
+\code{diff_non_cent} (vector differences of forecasts across games, aligned
+within each time point).}
 
-\item{n_eig}{Number of leading eigenvalues to use}
+\item{n_eig}{Number of leading eigenvalues to extract (dimension D in the
+paper).}
 
-\item{ngame}{Number of different instance}
+\item{ngame}{Number of independent games (used for scaling inner products).}
 
-\item{nsamp}{Number of sample points in the time domain}
+\item{nsamp}{Number of time grid points.}
 
-\item{grid}{Name of the grid in the data frame}
+\item{grid}{Name of the time grid column.}
 
-\item{cent}{Whether to center the difference in probabilistic forecasts or not}
+\item{cent}{If \code{TRUE}, use \code{diff_cent} (centered differences); if \code{FALSE},
+use \code{diff_non_cent}.}
 }
 \value{
-The leading \code{n_eig} eigenvalues of the covariance matrix to be used in the Delta test.
+A numeric vector of length \code{n_eig} of eigenvalues (descending).
 }
 \description{
-calc_eig() returns TBA
+Forms the empirical covariance matrix of either centered or non-centered
+forecast differences across time points (see \code{diff_cent} vs \code{diff_non_cent}
+in the paper), and returns the leading eigenvalues scaled by one over
+\code{nsamp}, for use with \code{\link[=calc_pval]{calc_pval()}}. This matches the construction in the
+replication \code{utility.R} (\code{calc_p_val} / \code{eigs_sym}).
+}
+\references{
+Yeh, C.-K., Rice, G., & Dubin, J. A. (2022). \emph{The American Statistician},
+\emph{76}, 214--223. \doi{10.1080/00031305.2021.1967781}
+
+Preprint: \url{https://arxiv.org/abs/2010.00781}
 }

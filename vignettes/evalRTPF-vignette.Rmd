@@ -1,9 +1,8 @@
 ---
 title: "evalRTPF guide"
 subtitle: "EVALuating Real-Time Probabilistic Forecast"
-author: | 
-  | Chi-Kuang Yeh, Gregory Rice, Joel A. Dubin
-  | University of Waterloo
+author: |
+  | Chi-Kuang Yeh (Georgia State University); Gregory Rice, Joel A. Dubin (University of Waterloo)
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_document:

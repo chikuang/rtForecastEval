@@ -2,7 +2,7 @@
 % Please edit documentation in R/calc_L_s2.R
 \name{calc_L_s2}
 \alias{calc_L_s2}
-\title{Calculator for the Loss function and the corresponding variance}
+\title{Pointwise mean loss difference and variance}
 \usage{
 calc_L_s2(
   df,
@@ -14,21 +14,33 @@ calc_L_s2(
 )
 }
 \arguments{
-\item{df}{TBA}
+\item{df}{A data frame with one row per (game × time) in long format.}
 
-\item{pA}{TBA}
+\item{pA, pB}{Column names for the two forecast vectors (probabilities between
+0 and 1).}
 
-\item{pB}{TBA}
+\item{Y}{Column name for the binary outcome (0/1).}
 
-\item{Y}{TBA}
+\item{grid}{Column name for the normalized time grid between 0 and 1.}
 
-\item{grid}{TBA}
-
-\item{L}{TBA}
+\item{L}{Loss function; default is squared error, \(L(x,y)=(x-y)^2\).}
 }
 \value{
-A value of the test statistics and the associated p-value between two sets of real-time probabilistic forecasts
+A tibble with one row per \code{grid} value and columns \code{L} (mean loss
+difference), \code{sigma2} (variance factor), and \code{n} (number of rows).
 }
 \description{
-calc_L_s2() returns TBA
+For each time grid point, estimates the pointwise difference in expected
+squared (Brier) loss between two probabilistic forecasts, and the variance
+factor used for inference (Yeh, Rice, and Dubin, 2022). With default loss
+\code{L(x,y) = (x-y)^2}, the function computes the mean over games of
+\code{L(Y, phat_1) - L(Y, phat_2)} at each time, and the influence-style terms
+\code{si} used to form sigma-squared over four, matching the paper replication
+code.
+}
+\references{
+Yeh, C.-K., Rice, G., & Dubin, J. A. (2022). \emph{The American Statistician},
+\emph{76}, 214--223. \doi{10.1080/00031305.2021.1967781}
+
+Preprint: \url{https://arxiv.org/abs/2010.00781}
 }

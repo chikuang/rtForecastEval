@@ -1,14 +1,15 @@
-#' @title evalRTPF: Compare real-time probabilistic forecasts
+#' evalRTPF: Compare real-time probabilistic forecasts
+#'
+#' @docType package
 #' @name evalRTPF-package
 #' @aliases evalRTPF
-#' @docType package
 #'
 #' Implements the **delta test** and related tools from Yeh, Rice, and Dubin
 #' for comparing two continuously updated probabilistic forecasts (e.g. in-game
 #' win probabilities) under squared (Brier-type) loss. Core steps: estimate
 #' pointwise mean loss difference and its variance ([`calc_L_s2()`]), form the
 #' test statistic [`calc_Z()`], estimate leading eigenvalues of the associated
-#' covariance [`calc_eig()`], and obtain Monte Carlo *p*-values and quantiles
+#' covariance [`calc_eig()`], and obtain Monte Carlo p-values and quantiles
 #' [`calc_pval()`]. [`df_gen()`] reproduces the simulation designs used in the
 #' paper; [`plot_pcb()`] draws naive pointwise confidence bands.
 #'
@@ -25,7 +26,6 @@
 #' Preprint: \url{https://arxiv.org/abs/2010.00781} (PDF:
 #' \url{https://arxiv.org/pdf/2010.00781.pdf}).
 #'
-#' @keywords internal
 #' @import dplyr
 #' @import tidyr
 #' @import ggplot2

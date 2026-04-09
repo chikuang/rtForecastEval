@@ -2,13 +2,13 @@
 % Please edit documentation in R/calc_Z.R
 \name{calc_Z}
 \alias{calc_Z}
-\title{Calculator of the test statistics of delta test}
+\title{Delta test statistic for comparing two forecasting methods}
 \usage{
 calc_Z(
   df,
   pA = "phat_1",
   pB = "phat_2",
-  Y,
+  Y = "Y",
   grid = "grid",
   nsamp,
   ngame,
@@ -16,25 +16,32 @@ calc_Z(
 )
 }
 \arguments{
-\item{df}{A data frame that contains the following columns: Y, pA, pB, and grid}
+\item{df}{Data frame containing forecasts, outcomes, and \code{grid}.}
 
-\item{pA}{Name of the probabilistic forecasts from the first method}
+\item{pA, pB}{Names of columns with the two probability forecasts.}
 
-\item{pB}{Name of the probabilistic forecasts from the second method}
+\item{Y}{Name of the binary outcome column.}
 
-\item{Y}{Name of the outcome variable}
+\item{grid}{Name of the column with normalized times between 0 and 1.}
 
-\item{grid}{Name of the grid}
+\item{nsamp}{Number of distinct time points (length of the grid).}
 
-\item{nsamp}{Number of sample points in the time domain}
+\item{ngame}{Number of independent replicates (e.g. games).}
 
-\item{ngame}{Number of different instance}
-
-\item{L}{Loss function to evaluate the performance between two methods}
+\item{L}{Loss function; default is squared error.}
 }
 \value{
-A value of the test statistics between two sets of real-time probabilistic forecasts
+A single numeric value of the test statistic Z.
 }
 \description{
-calc_Z() returns a value of the test statistics of the delta test.
+Computes the global test statistic Z for comparing two real-time forecasters
+under squared loss: Z equals (n_game / n_samp) times the sum over grid
+points of the squared pointwise mean loss differences, matching the
+implementation in the paper replication code (utility.R).
+}
+\references{
+Yeh, C.-K., Rice, G., & Dubin, J. A. (2022). \emph{The American Statistician},
+\emph{76}, 214--223. \doi{10.1080/00031305.2021.1967781}
+
+Preprint: \url{https://arxiv.org/abs/2010.00781}
 }

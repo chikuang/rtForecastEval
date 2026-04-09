@@ -2,22 +2,32 @@
 % Please edit documentation in R/plot_pcb.R
 \name{plot_pcb}
 \alias{plot_pcb}
-\title{Plotter for point-wise confidence band}
+\title{Naive pointwise confidence band for mean loss difference}
 \usage{
 plot_pcb(df, grid = "grid", L = "L", var = "sigma2")
 }
 \arguments{
-\item{df}{TBA}
+\item{df}{Output of \code{\link[=calc_L_s2]{calc_L_s2()}} (or compatible tibble with \code{grid}, \code{L},
+\code{sigma2}, \code{n}).}
 
-\item{grid}{TBA}
+\item{grid}{Name of the x-axis column (default \code{"grid"}).}
 
-\item{L}{TBA}
+\item{L}{Name of the pointwise mean difference column (default \code{"L"}).}
 
-\item{var}{TBA}
+\item{var}{Name of the variance column (default \code{"sigma2"}).}
 }
 \value{
-A value of the test statistics and the associated p-value between two sets of real-time probabilistic forecasts
+A \strong{ggplot2} object.
 }
 \description{
-plot_pcb() returns TBA
+Plots the pointwise mean loss difference from \code{\link[=calc_L_s2]{calc_L_s2()}} (column \code{L})
+against time, with a normal-theory band using \code{sigma2} and the point sample
+size \code{n}. This is the \strong{naive} \(t\)-style band from the paper; global
+inference uses \code{\link[=calc_Z]{calc_Z()}} / \code{\link[=calc_pval]{calc_pval()}} instead.
+}
+\references{
+Yeh, C.-K., Rice, G., & Dubin, J. A. (2022). \emph{The American Statistician},
+\emph{76}, 214--223. \doi{10.1080/00031305.2021.1967781}
+
+Preprint: \url{https://arxiv.org/abs/2010.00781}
 }

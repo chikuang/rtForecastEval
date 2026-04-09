@@ -2,11 +2,113 @@
 % Please edit documentation in R/evalRTPF-package.R
 \docType{package}
 \name{evalRTPF-package}
-\alias{evalRTPF}
 \alias{evalRTPF-package}
-\title{evalRTPF: Evaluate the discrepancy between two Real-Time updated Probabilistic Forecasts}
+\alias{evalRTPF}
+\alias{Implements}
+\alias{the}
+\alias{**delta}
+\alias{test**}
+\alias{and}
+\alias{related}
+\alias{tools}
+\alias{from}
+\alias{Yeh,}
+\alias{Rice,}
+\alias{Dubin}
+\alias{for}
+\alias{comparing}
+\alias{two}
+\alias{continuously}
+\alias{updated}
+\alias{probabilistic}
+\alias{forecasts}
+\alias{(e.g.}
+\alias{in-game}
+\alias{win}
+\alias{probabilities)}
+\alias{under}
+\alias{squared}
+\alias{(Brier-type)}
+\alias{loss.}
+\alias{Core}
+\alias{steps:}
+\alias{estimate}
+\alias{pointwise}
+\alias{mean}
+\alias{loss}
+\alias{difference}
+\alias{its}
+\alias{variance}
+\alias{([`calc_L_s2()`]),}
+\alias{form}
+\alias{test}
+\alias{statistic}
+\alias{[`calc_Z()`],}
+\alias{leading}
+\alias{eigenvalues}
+\alias{of}
+\alias{associated}
+\alias{covariance}
+\alias{[`calc_eig()`],}
+\alias{obtain}
+\alias{Monte}
+\alias{Carlo}
+\alias{p-values}
+\alias{quantiles}
+\alias{[`calc_pval()`].}
+\alias{[`df_gen()`]}
+\alias{reproduces}
+\alias{simulation}
+\alias{designs}
+\alias{used}
+\alias{in}
+\alias{paper;}
+\alias{[`plot_pcb()`]}
+\alias{draws}
+\alias{naive}
+\alias{confidence}
+\alias{bands.}
+\alias{The}
+\alias{companion}
+\alias{replication}
+\alias{repository}
+\alias{(NBA}
+\alias{data}
+\alias{workflow,}
+\alias{calibration}
+\alias{surfaces,}
+\alias{additional}
+\alias{plots)}
+\alias{is}
+\alias{separate}
+\alias{this}
+\alias{package;}
+\alias{package}
+\alias{exports}
+\alias{statistical}
+\alias{building}
+\alias{blocks}
+\alias{there.}
+\title{evalRTPF: Compare real-time probabilistic forecasts}
 \description{
-This package provides the evaluating tools to on the performance between two or more competing continuously-updated probabilistic forecasts, under the square norm, along with an easy-to-interpret graphical representation.
+Methods from Yeh, Rice, and Dubin (2022, doi:10.1080/00031305.2021.1967781; arXiv:2010.00781) for comparing two continuously updated probabilistic forecasts under squared (Brier) loss: pointwise loss and variance, a global delta test (Monte Carlo p-values), simulation designs, and a naive pointwise band plot.
+}
+\references{
+Yeh, C.-K., Rice, G., & Dubin, J. A. (2022). Evaluating real-time
+probabilistic forecasts with application to National Basketball Association
+outcome prediction. \emph{The American Statistician}, \emph{76}, 214--223.
+\doi{10.1080/00031305.2021.1967781}
+
+Preprint: \url{https://arxiv.org/abs/2010.00781} (PDF:
+\url{https://arxiv.org/pdf/2010.00781.pdf}).
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/chikuang/evalRTPF}
+  \item Report bugs at \url{https://github.com/chikuang/evalRTPF/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Chi-Kuang Yeh \email{chi-kuang.yeh@uwaterloo.ca}
@@ -18,4 +120,3 @@ Other contributors:
 }
 
 }
-\keyword{internal}

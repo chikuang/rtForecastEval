@@ -11,13 +11,17 @@ Authors@R: c(
            role =  c("ctb", "ths"))     
      )
 Description: 
-    This package provides the evaluating tools to on the performance between two 
-    or more competing continuously-updated probabilistic forecasts, under the 
-    square norm, along with an easy-to-interpret graphical representation.
+    Methods from Yeh, Rice, and Dubin (2022, doi:10.1080/00031305.2021.1967781;
+    arXiv:2010.00781) for comparing two continuously updated probabilistic
+    forecasts under squared (Brier) loss: pointwise loss and variance, a global
+    delta test (Monte Carlo p-values), simulation designs, and a naive
+    pointwise band plot.
+URL: https://github.com/chikuang/evalRTPF
+BugReports: https://github.com/chikuang/evalRTPF/issues
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Imports:
     dplyr (>= 1.0.1),
