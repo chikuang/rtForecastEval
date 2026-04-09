@@ -1,16 +1,26 @@
 ---
-title: "SLSEDesign: Optimal designs using the second-order Least squares estimator"
-author: |
-  | *[Chi-Kuang Yeh](https://chikuang.github.io/), [Gregory Rice](https://uwaterloo.ca/statistics-and-actuarial-science/profiles/greg-rice), [Joel A. Dubin](https://uwaterloo.ca/statistics-and-actuarial-science/profiles/joel-dubin)*
-  | 
-date: "*`r format(Sys.time(), '%B %d, %Y')`*"
-output: github_document
+title: "evalRTPF: EVALuating Real-Time Probabilistic Forecast"
+format: gfm
+date: today
+date-format: "MMMM D, YYYY"
 ---
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/chikuang/evalRTPF/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chikuang/evalRTPF/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+---
+
+## Authors
+
+**Chi-Kuang Yeh** (Georgia State University)
+[![ORCID](https://img.shields.io/badge/ORCID-0000--0001--7057--2096-A6CE39?logo=orcid.png)](https://orcid.org/0000-0001-7057-2096)
+
+**Gregory Rice** (University of Waterloo)
+
+**Joel A. Dubin** (University of Waterloo)
+
+---
 
 ## Description
 
@@ -29,11 +39,12 @@ devtools::install_github("chikuang/evalRTPF")
 Will be added soon.
 
 ## TODO
+
 + [ ] Add examples with graphical illustrations
 + [ ] Add detailed descriptions
 + [ ] Speed-up with RCPP components
 + [ ] Upload to CRAN
 
-## Reference 
+## Reference
 
-* Yeh, C.-K., Rice, G. & Dubin, J.A. (2022). [Evaluating real-time probabilistic forecasts with application to National Basketball Association outcome prediction](https://www.tandfonline.com/doi/abs/10.1080/00031305.2021.1967781?journalCode=utas20), *The American Statistician*, 62, 75-92. 
+* Yeh, C.-K., Rice, G. & Dubin, J.A. (2022). [Evaluating real-time probabilistic forecasts with application to National Basketball Association outcome prediction](https://www.tandfonline.com/doi/abs/10.1080/00031305.2021.1967781?journalCode=utas20), *The American Statistician*, 62, 75-92.
