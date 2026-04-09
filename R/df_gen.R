@@ -28,39 +28,46 @@
 #'
 #' @importFrom MASS mvrnorm
 #' @export
-df_gen <- function(N, Ngame, type = "OU", a = 1.0, b = 0.27) {
+df_gen <- function(N, Ngame, type = c("OU", "BM"), a = 1.0, b = 0.27) {
+  if (!is.numeric(N) || length(N) != 1L || N < 1L) {
+    stop("`N` must be a positive integer (number of interior time steps).", call. = FALSE)
+  }
+  if (!is.numeric(Ngame) || length(Ngame) != 1L || Ngame < 1L) {
+    stop("`Ngame` must be a positive integer (number of replicates).", call. = FALSE)
+  }
+  if (!requireNamespace("sde", quietly = TRUE)) {
+    stop("Package \"sde\" is required for df_gen(). Install with install.packages(\"sde\").", call. = FALSE)
+  }
+  type <- match.arg(type)
+  N <- as.integer(N)
+  Ngame <- as.integer(Ngame)
+
   uu <- a * runif(Ngame, -1, +1) + b
-  xt <- sapply(1:Ngame, function(x) {
-    tt <- seq(0, 1, 1 / N)
-    wt <- sde::BM(x = 0, t0 = 0, T = 1, N = N) %>% as.numeric() ##
-    uu[x] * tt + wt
-  })  # nsamp x ngame
+  tt <- seq(0, 1, 1 / N)
+  xt <- sapply(seq_len(Ngame), function(g) {
+    wt <- sde::BM(x = 0, t0 = 0, T = 1, N = N) %>% as.numeric()
+    uu[g] * tt + wt
+  })
 
   Yn <- ifelse(xt[N + 1, ] > 0, 1, 0)
 
   if (type == "OU") {
-    sim_OU <- function(Nsamp, Ngame) {
-      n <- Nsamp
-      N <- Ngame
+    sim_OU <- function(n_time, n_rep) {
       sig <- 1
-      tj <- seq(0, 1, 1 / n)
-      EXt <- rep(0, length(tj))
-      CovXt <- matrix(NA, n + 1, n + 1)
-      for (i in 1:(n + 1)) {
-        for (j in 1:(n + 1)) {
-          CovXt[i, j] <- sig^2 * exp(-0.5 * tj[i]) * exp(-0.5 * tj[j]) * min(exp(tj[i]), exp(tj[j]))
-        }
-      }
-      return(mvrnorm(n = N, mu = EXt, Sigma = CovXt) %>% t())
+      tj <- seq(0, 1, 1 / n_time)
+      mu <- rep(0, length(tj))
+      etj <- exp(tj)
+      CovXt <- sig^2 * exp(-0.5 * outer(tj, tj, `+`)) * outer(etj, etj, pmin)
+      mvrnorm(n = n_rep, mu = mu, Sigma = CovXt) %>% t()
     }
 
-    w1 <- sim_OU(Ngame = Ngame, Nsamp = N)
-    w2 <- sim_OU(Ngame = Ngame, Nsamp = N)
-  } else { # else sim BM
-    w1 <- sapply(1:Ngame, function(x) {
+    w1 <- sim_OU(n_time = N, n_rep = Ngame)
+    w2 <- sim_OU(n_time = N, n_rep = Ngame)
+  } else {
+    w1 <- sapply(seq_len(Ngame), function(g) {
       sde::BM(x = 0, t0 = 0, T = 1, N = N) %>% as.numeric()
     })
-    w2 <- sapply(1:Ngame, function(x) {
+    w2 <- sapply(seq_len(Ngame), function(g) {
       sde::BM(x = 0, t0 = 0, T = 1, N = N) %>% as.numeric()
     })
   }

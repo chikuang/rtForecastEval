@@ -1,0 +1,243 @@
+---
+title: "rtForecastEval guide"
+subtitle: "EVALuating Real-Time Probabilistic Forecast"
+author: |
+  | Chi-Kuang Yeh (Georgia State University); Gregory Rice, Joel A. Dubin (University of Waterloo)
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_document:
+    toc: yes
+    toc_float: true
+    theme: readable
+    highlight: tango
+  rmarkdown::html_vignette:
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{rtForecastEval guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(digits = 3)
+```
+
+## Mind map and workflow
+
+**rtForecastEval** compares two real-time forecasters on a common time grid. The schematic below matches the analysis order in this vignette: prepare a long tibble, run the **global delta test** (`calc_Z` → `calc_eig` → `calc_pval`), and optionally summarize **pointwise** loss with `calc_L_s2` and `plot_pcb`.
+
+```{r workflow-schematic, echo=FALSE, fig.width=8, fig.height=4, fig.cap="Typical workflow: global test (top) and pointwise loss plot (bottom). Arrows are logical dependencies, not strict call order."}
+library(ggplot2)
+
+box <- function(x, y, w, h, label) {
+  data.frame(
+    xmin = x - w / 2, xmax = x + w / 2,
+    ymin = y - h / 2, ymax = y + h / 2,
+    label = label, x = x, y = y
+  )
+}
+
+top <- rbind(
+  box(1.2, 5, 1.1, 0.55, "Data\n(df_gen or yours)"),
+  box(3.1, 5, 1.0, 0.55, "Long format +\ncentered diffs"),
+  box(4.9, 5.45, 0.85, 0.45, "calc_Z"),
+  box(4.9, 4.55, 0.85, 0.45, "calc_eig"),
+  box(6.8, 5, 0.95, 0.55, "calc_pval")
+)
+bot <- rbind(
+  box(3.1, 2.6, 1.0, 0.55, "calc_L_s2"),
+  box(5.0, 2.6, 0.85, 0.55, "plot_pcb")
+)
+rects <- rbind(top, bot)
+
+seg <- data.frame(
+  x = c(1.75, 2.65, 4.45, 4.45, 5.35, 5.35, 3.1, 3.65),
+  y = c(5, 5, 5.45, 4.55, 5.45, 4.55, 4.45, 2.6),
+  xend = c(2.6, 3.6, 5.35, 5.35, 6.35, 6.35, 3.1, 4.55),
+  yend = c(5, 5, 5.45, 4.55, 5, 5, 3.15, 2.6)
+)
+
+ggplot() +
+  geom_rect(
+    data = rects,
+    aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    fill = "grey96", color = "grey35", size = 0.35
+  ) +
+  geom_text(data = rects, aes(x = x, y = y, label = label), size = 3) +
+  geom_segment(
+    data = seg,
+    aes(x = x, y = y, xend = xend, yend = yend),
+    arrow = grid::arrow(length = grid::unit(0.12, "cm"), type = "closed"),
+    size = 0.35,
+    color = "grey25"
+  ) +
+  annotate("text", x = 4.9, y = 5.95, label = "Global delta test (chi-square approx.)", size = 3.2, fontface = "italic") +
+  annotate("text", x = 4.0, y = 1.85, label = "Pointwise mean loss + naive band", size = 3.2, fontface = "italic") +
+  coord_cartesian(xlim = c(0.3, 7.5), ylim = c(1.5, 6.2), clip = "off") +
+  theme_void() +
+  theme(plot.margin = grid::unit(c(12, 8, 8, 8), "pt"))
+```
+
+The [package README](https://github.com/chikuang/rtForecastEval#mind-map-and-workflow) on GitHub also includes [Mermaid](https://mermaid.js.org/) mind map and flowchart diagrams (same ideas as the figure above).
+
+## Figures in the paper and where they are produced
+
+The [paper](https://doi.org/10.1080/00031305.2021.1967781) (preprint [arXiv:2010.00781](https://arxiv.org/abs/2010.00781)) has two kinds of graphics:
+
+### 1. Simulation and global test (this vignette + **rtForecastEval**)
+
+This vignette reproduces the **workflow** used in the simulation blocks of the paper: generate two competing real-time forecasts with [`df_gen()`], build `diff_non_cent` / `diff_cent`, compute the **delta test** statistic, eigenvalues, and Monte Carlo *p*-values with [`calc_Z()`], [`calc_eig()`], and [`calc_pval()`], and plot the **pointwise** mean loss difference with a naive band using [`calc_L_s2()`] and [`plot_pcb()`]. That corresponds to methodology for **skill** (relative performance) over game time in a controlled simulation.
+
+The first code chunk below spells out the linear algebra explicitly; the second chunk shows the same steps through the package wrappers.
+
+### 2. NBA application: calibration surfaces, reliability diagrams, and model comparisons
+
+Those figures are **not** self-contained in **rtForecastEval** because they require the scraped NBA play-by-play inputs, the `load_nba_data()` / `pre_process()` pipeline, and several bespoke plotting scripts.
+
+Reproduce them from the separate replication repository (**RTPForNBA**; historically bundled with the paper’s supplementary code), not from this package alone:
+
+| Idea in the paper | Typical script (replication repo) | Depends on |
+|-------------------|-----------------------------------|------------|
+| Calibration **surface** (3D: time × forecast × centered residual) | `plotting/surfacePlot.R` | `nba_FD.R` (fits logit, builds `my_df`), **plot3D**, **akima**, **lattice**, binned CIs |
+| Reliability-style **plot** at one time (e.g. mid-game) | `plotting/calibrationPlot.R` (see also end of `surfacePlot.R`) | Same prepared `df_try` object |
+| Skill curves / \(\hat\Delta_n(t)\) for ESPN vs models (PgRS, LTW, etc.) | `plotting/1_PgRS.R`, `2_LTW.R`, `3_CF.R`, … | `utility.R` (`calc_L_s2`, `L_smoothing`), `nba_FD.R` |
+| **Simulation** figures (oracle, score difference, etc.) | `simulation/PF-sim/plot_sim_*.R` | `simulation/PF-sim/simulator.R` and generated outputs |
+
+**Suggested order in the replication repo:** prepare data under `data/`, run `nba_FD.R` (or the season scripts it sources), then `source()` the relevant file under `plotting/` with working directory set to that project root.
+
+The rest of this vignette focuses on (1).
+
+```{r load, message = FALSE, include = FALSE}
+require(dplyr)
+require(tidyr)
+require(gridExtra)
+require(RSpectra)
+require(rlist)
+```
+
+```{r, include = FALSE}
+library(rtForecastEval)
+```
+
+```{r}
+library(ggplot2)
+library(tibble)
+library(MASS)
+nsamp <- 100 # number of in-game events
+ngame <- 100 # number of games
+
+#' Parameter for generating the eigenvalues, and p-values
+D <- 10 # Number of eigenvalues to keep
+N_MC <- 5000 # for simulating the p-value
+L <- function(x, y) {
+  return((x - y) ^ 2)
+}
+
+# Data generation ---------------------------------------------------------
+df_equ <- df_gen(N = nsamp, Ngame = ngame) %>%
+  group_by(grid) %>%
+  mutate(
+    p_bar_12 = mean(phat_A - phat_B),
+    diff_non_cent = phat_A - phat_B,
+    diff_cent = phat_A - phat_B - p_bar_12
+  ) %>% ungroup()
+
+# Apply our test (explicit construction, as in utility.R) ----------------
+
+Z <- df_equ %>% group_by(grid) %>%
+  summarise(delta_n = mean(L(phat_A, Y) - L(phat_B, Y))) %>%
+  {
+    sum((.)$delta_n^2) / nsamp * ngame
+  }
+
+temp <- df_equ %>% group_split(grid, .keep = FALSE)
+
+eigV_hat <- lapply(1:nsamp, function(i) {
+  sapply(1:nsamp, function(j) {
+    as.numeric(temp[[i]]$diff_non_cent %*% temp[[j]]$diff_non_cent / ngame)
+  })
+}) %>% list.rbind() %>% {
+  RSpectra::eigs_sym(
+    A = (.),
+    k = D,
+    which = "LM",
+    opts = list(retvec = FALSE)
+  )$values
+} %>%
+  {
+    (.)/nsamp
+  }
+
+eigV_til <- lapply(1:nsamp, function(i) {
+  sapply(1:nsamp, function(j) {
+    as.numeric(temp[[i]]$diff_cent %*% temp[[j]]$diff_cent / ngame)
+  })
+}) %>% list.rbind() %>% {
+  RSpectra::eigs_sym(
+    A = (.),
+    k = D,
+    which = "LM",
+    opts = list(retvec = FALSE)
+  )$values
+} %>%
+  {
+    (.)/nsamp
+  }
+
+MC_hat <- sapply(1:N_MC, function(x) {
+  crossprod(eigV_hat, rchisq(D, df = 1))
+})
+
+q_90_hat <- quantile(MC_hat, 0.90)
+q_95_hat <- quantile(MC_hat, 0.95)
+q_99_hat <- quantile(MC_hat, 0.99)
+
+MC_til <- sapply(1:N_MC, function(x) {
+  crossprod(eigV_til, rchisq(D, df = 1))
+})
+
+q_90_til <- quantile(MC_til, 0.90)
+q_95_til <- quantile(MC_til, 0.95)
+q_99_til <- quantile(MC_til, 0.99)
+
+p_hat <- 1 - ecdf(MC_hat)(Z)
+
+tibble(
+  type = c("non-center", "center"),
+  Z = rep(Z, 2),
+  "pval" = c(p_hat, p_hat),
+  "90%" = c(q_90_hat, q_90_til),
+  "95%" = c(q_95_hat, q_95_til),
+  "99%" = c(q_99_hat, q_99_til)
+)
+```
+
+### Same analysis using package functions
+
+```{r function wrappers, fig.width = 7, fig.height = 4, fig.cap = "Pointwise mean loss difference (A vs B) with naive normal band — simulation setting."}
+to_center <- FALSE
+
+ZZ <- calc_Z(df = df_equ, pA = "phat_A", pB = "phat_B", Y = "Y", nsamp = nsamp, ngame = ngame)
+eigg <- calc_eig(
+  df = df_equ, n_eig = D, ngame = ngame,
+  nsamp = nsamp, grid = "grid", cent = to_center
+)
+oh <- calc_pval(ZZ, eig = eigg, quan = c(0.90, 0.95, 0.99), n_MC = N_MC)
+
+temp <- calc_L_s2(df = df_equ, pA = "phat_A", pB = "phat_B")
+
+plot_pcb(df = temp)
+
+tibble(
+  type = ifelse(to_center, "center", "non-center"),
+  Z = ZZ,
+  pval = oh$p_val,
+  "90%" = oh$quantile[1],
+  "95%" = oh$quantile[2],
+  "99%" = oh$quantile[3]
+)
+```

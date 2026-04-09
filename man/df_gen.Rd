@@ -4,7 +4,7 @@
 \alias{df_gen}
 \title{Simulate real-time probabilistic forecasts (paper designs)}
 \usage{
-df_gen(N, Ngame, type = "OU", a = 1, b = 0.27)
+df_gen(N, Ngame, type = c("OU", "BM"), a = 1, b = 0.27)
 }
 \arguments{
 \item{N}{Number of interior time steps (grid has \code{N+1} points from 0 to 1).}

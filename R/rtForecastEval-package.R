@@ -1,8 +1,8 @@
-#' evalRTPF: Compare real-time probabilistic forecasts
+#' rtForecastEval: Compare real-time probabilistic forecasts
 #'
 #' @docType package
-#' @name evalRTPF-package
-#' @aliases evalRTPF
+#' @name rtForecastEval-package
+#' @aliases rtForecastEval
 #'
 #' Implements the **delta test** and related tools from Yeh, Rice, and Dubin
 #' for comparing two continuously updated probabilistic forecasts (e.g. in-game

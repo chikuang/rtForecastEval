@@ -1,5 +1,5 @@
-Package: evalRTPF
-Title: Evaluate the discrepancy between two Real-Time updated Probabilistic Forecasts 
+Package: rtForecastEval
+Title: Evaluate the Discrepancy between Two Real-Time Updated Probabilistic Forecasts
 Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Chi-Kuang", family = "Yeh",
@@ -16,8 +16,8 @@ Description:
     forecasts under squared (Brier) loss: pointwise loss and variance, a global
     delta test (Monte Carlo p-values), simulation designs, and a naive
     pointwise band plot.
-URL: https://github.com/chikuang/evalRTPF
-BugReports: https://github.com/chikuang/evalRTPF/issues
+URL: https://github.com/chikuang/rtForecastEval
+BugReports: https://github.com/chikuang/rtForecastEval/issues
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

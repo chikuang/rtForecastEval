@@ -1,13 +1,16 @@
 ---
-title: "evalRTPF: EVALuating Real-Time Probabilistic Forecast"
+title: "rtForecastEval: EVALuating Real-Time Probabilistic Forecast"
 format: gfm
 date: today
 date-format: "MMMM D, YYYY"
 ---
 
+<!-- After editing README.qmd, run: Rscript tools/render-readme.R (fixes Mermaid code fences for GitHub). -->
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/chikuang/evalRTPF/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chikuang/evalRTPF/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/chikuang/rtForecastEval/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chikuang/rtForecastEval/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
+**Repository:** [github.com/chikuang/rtForecastEval](https://github.com/chikuang/rtForecastEval)
 
 ---
 
@@ -22,35 +25,121 @@ date-format: "MMMM D, YYYY"
 
 ---
 
-## Description
+## Overview
 
-**evalRTPF** is an R implementation of the methodology in [Yeh, Rice, and Dubin (2022)](https://doi.org/10.1080/00031305.2021.1967781) (preprint [arXiv:2010.00781](https://arxiv.org/abs/2010.00781), [PDF](https://arxiv.org/pdf/2010.00781.pdf)). The paper develops tools to evaluate **continuously updated** probabilistic forecasts: calibration summaries, **skill** (relative performance of two forecasters) via a global **delta test** in \(L^2[0,1]\) under squared (Brier-type) loss, and simple **pointwise** inference for the mean loss difference over time.
+**rtForecastEval** implements the methodology in [Yeh, Rice, and Dubin (2022)](https://doi.org/10.1080/00031305.2021.1967781) ([preprint arXiv:2010.00781](https://arxiv.org/abs/2010.00781), [PDF](https://arxiv.org/pdf/2010.00781.pdf)). The paper develops tools for **continuously updated** probabilistic forecasts: calibration-style summaries, **skill** (relative performance of two forecasters) via a global **delta test** on $L^2[0,1]$ under squared (Brier) loss, and simple **pointwise** inference for the mean loss difference over time.
 
-This package provides the statistical building blocks: pointwise loss and variance (`calc_L_s2()`), the delta test statistic (`calc_Z()`), eigenvalues for the chi-square approximation (`calc_eig()`), Monte Carlo *p*-values (`calc_pval()`), simulation designs (`df_gen()`), interpolation on a time grid (`lin_interp()`), and a naive pointwise band plot (`plot_pcb()`).
+This package ships the statistical core used in the paper’s **simulation** sections. Full **NBA** replication (scraped data, calibration surfaces, competitor models) lives in a separate analysis repository and is not bundled here.
 
-Full replication code for the NBA application (data preparation, calibration **surface** plots, competitor models, etc.) lives in a separate analysis repository and is not bundled here.
+## Package contents
+
+| Topic | Functions |
+|-------|-----------|
+| Simulation designs | `df_gen()` — requires the [**sde**](https://CRAN.R-project.org/package=sde) package at runtime |
+| Pointwise loss / variance | `calc_L_s2()`, `lin_interp()` |
+| Global delta test | `calc_Z()`, `calc_eig()`, `calc_pval()` |
+| Plotting | `plot_pcb()` (naive pointwise band; uses **ggplot2**) |
+
+After installation, run `help(package = "rtForecastEval")` or `?df_gen` for full documentation.
+
+## Mind map and workflow
+
+The diagrams below use [Mermaid](https://mermaid.js.org/). They render on GitHub; in other viewers you may see the source only.
+
+### Mind map (package scope)
+
+```{r, echo=FALSE, results="asis"}
+cat(c(
+  "```mermaid",
+  "mindmap",
+  "  root((rtForecastEval))",
+  "    Paper",
+  "      Yeh Rice Dubin 2022",
+  "      Real-time probabilistic forecasts",
+  "    Inputs",
+  "      df_gen simulation",
+  "      Your own long-format data",
+  "    Global skill test",
+  "      calc_Z delta statistic",
+  "      calc_eig covariance spectrum",
+  "      calc_pval MC p-values",
+  "    Pointwise skill",
+  "      calc_L_s2 loss and variance",
+  "      plot_pcb naive band",
+  "    Other",
+  "      lin_interp time grid",
+  "```",
+  ""
+), sep = "\n")
+```
+
+### Analysis workflow
+
+```{r, echo=FALSE, results="asis"}
+cat(c(
+  "```mermaid",
+  "flowchart TD",
+  "  subgraph src[\"Data sources\"]",
+  "    A[\"df_gen()<br>(simulation)\"]",
+  "    B[\"Your forecasts<br>(long format)\"]",
+  "  end",
+  "  C[\"Long tibble:<br>game, grid, Y,<br>phat_A, phat_B\"]",
+  "  D[\"Centered / non-centered<br>differences\"]",
+  "  E[\"calc_Z()\"]",
+  "  F[\"calc_eig()\"]",
+  "  G[\"calc_pval()\"]",
+  "  H[\"calc_L_s2()\"]",
+  "  P[\"plot_pcb()\"]",
+  "  A --> C",
+  "  B --> C",
+  "  C --> D",
+  "  D --> E",
+  "  D --> F",
+  "  E --> G",
+  "  F --> G",
+  "  D --> H",
+  "  H --> P",
+  "```",
+  ""
+), sep = "\n")
+```
 
 ## Installation
 
-Currently evalRTPF is only available in R. We plan to develop Python, Julia and/or Matlab versions in the future.
+**rtForecastEval** is distributed as an R package on GitHub (not yet on CRAN). After installation, load **`library(rtForecastEval)`**.
+
+Recommended ([**pak**](https://pak.r-lib.org/) handles dependencies cleanly):
 
 ```r
-devtools::install_github("chikuang/evalRTPF")
+install.packages("pak")
+pak::pak("chikuang/rtForecastEval")
 ```
 
-## Examples
+Alternative: `remotes::install_github("chikuang/rtForecastEval")` after `install.packages("remotes")`. (As of devtools 2.5.0, `devtools::install_github()` is deprecated in favor of `pak::pak()` or `remotes::install_github()`.)
 
-Minimal simulation (needs the **sde** package: `install.packages("sde")`). After `devtools::install_github("chikuang/evalRTPF")` or `devtools::load_all()` from a clone:
+If you clone the repository and work from the source tree, use `devtools::load_all()` or `pkgload::load_all()` from the package root instead of installing from GitHub.
+
+Simulation via `df_gen()` also needs the suggested [**sde**](https://CRAN.R-project.org/package=sde) package (Brownian paths):
 
 ```r
+install.packages("sde")
+```
+
+Other languages (Python, Julia, Matlab) are not implemented in this repo; only R is supported for now.
+
+## Minimal example
+
+After installing the package, load **dplyr** (for the pipe) and **rtForecastEval**. The code below is **not executed** when this README is rendered, so you do not need the package installed to build `README.md` from `README.qmd`.
+
+```{r, eval=FALSE}
 library(dplyr)
-library(evalRTPF)
+library(rtForecastEval)
 
 set.seed(1)
-nsamp <- 40   # time grid size (N in df_gen → nsamp + 1 points)
-ngame <- 50   # number of independent “games”
-D <- 8        # number of leading eigenvalues
-N_MC <- 2000  # Monte Carlo draws for p-value
+nsamp <- 40   # interior steps; df_gen() uses a grid of nsamp + 1 points on [0, 1]
+ngame <- 50   # independent replicates (“games”)
+D <- 8        # leading eigenvalues for the chi-square approximation
+N_MC <- 2000  # Monte Carlo draws for the p-value
 
 df_equ <- df_gen(N = nsamp, Ngame = ngame) |>
   group_by(grid) |>
@@ -66,21 +155,27 @@ eig <- calc_eig(df_equ, n_eig = D, ngame = ngame, nsamp = nsamp, cent = FALSE)
 out <- calc_pval(ZZ, eig, quan = c(0.9, 0.95, 0.99), n_MC = N_MC)
 
 Ltab <- calc_L_s2(df_equ, "phat_A", "phat_B")
-# plot_pcb(Ltab)  # needs library(ggplot2)
+# plot_pcb(Ltab)  # requires library(ggplot2)
 
 c(Z = ZZ, p_value = out$p_val, out$quantile)
 ```
 
-For the full workflow (larger `nsamp` / `ngame`, centered eigenvalues, etc.), see `vignette("evalRTPF-vignette")`.
+For the full workflow (explicit linear algebra vs. wrappers, larger grids, centered eigenvalues), open the vignette:
 
-## TODO
+```r
+vignette("rtForecastEval-vignette", package = "rtForecastEval")
+```
 
-+ [ ] Add examples with graphical illustrations
-+ [ ] Add detailed descriptions
-+ [ ] Speed-up with RCPP components
-+ [ ] Upload to CRAN
+## Roadmap
+
+- [ ] Optional pkgdown site and CRAN release
+- [ ] Optional **Rcpp** acceleration for heavy eigenvalue / Monte Carlo loops
 
 ## References
 
 * Yeh, C.-K., Rice, G. & Dubin, J. A. (2022). [Evaluating real-time probabilistic forecasts with application to National Basketball Association outcome prediction](https://www.tandfonline.com/doi/full/10.1080/00031305.2021.1967781). *The American Statistician*, *76*, 214--223. DOI [10.1080/00031305.2021.1967781](https://doi.org/10.1080/00031305.2021.1967781).
 * Preprint: [arXiv:2010.00781](https://arxiv.org/abs/2010.00781) ([PDF](https://arxiv.org/pdf/2010.00781.pdf)).
+
+## License
+
+GPL-3 — see [DESCRIPTION](DESCRIPTION).

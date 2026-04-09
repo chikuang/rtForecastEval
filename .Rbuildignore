@@ -1,5 +1,5 @@
 ^README\.qmd$
-^evalRTPF\.Rproj$
+^rtForecastEval\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
 ^doc$
